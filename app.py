@@ -15,17 +15,17 @@ IOS_APPSTORE_URL = "https://apps.apple.com/app/id1234567890"
 
 # Department coordinates and names
 EAST_LAND_DEPARTMENTS = {
-    "project_planning": "13.2057989,80.3209443",
-    "shop_vii": "13.2062904,80.3207080",
-    "shop_vi": "13.2099126,80.3209142",
-    "shop_v": "13.2086706,80.3205279",
-    "shop_iv": "13.2070161,80.3203764",
-    "ev_shop": "13.2075096,80.3191446",
-    "hrd_centre": "13.2068653,80.3192841",
-    "canteen": "13.2066567,80.3192250",
-    "central_quality_office": "13.2064706,80.3196311",
-    "field_quality_centre": "28.6149,77.2100",
-    "defense_sourcing": "28.6150,77.2101"
+    "project_planning": "13.205771613533782, 80.32074741907557",
+    "shop_vii": "13.206076928531756, 80.32008594479278",
+    "shop_vi": "13.209963639974356, 80.32032158067736",
+    "shop_v": "13.208837941689495, 80.32104712573168",
+    "shop_iv": "13.20782178064958, 80.32052262113612",
+    "ev_shop": "13.208176296588881, 80.31960466281713",
+    "hrd_centre": "13.207046275218529, 80.31949086635018",
+    "canteen": "13.20661104802836, 80.31890416027386",
+    "central_quality_office": "13.206369387503464, 80.3193897583494",
+    "Uptime solutions": "13.20551549941737, 80.32064234995595",
+    "defense_sourcing": "13.205787072707418, 80.3207281806381"
 }
 
 EAST_LAND_DISPLAY = {
@@ -38,29 +38,29 @@ EAST_LAND_DISPLAY = {
     "hrd_centre": "HRD Centre",
     "canteen": "Canteen",
     "central_quality_office": "Central Quality Office",
-    "field_quality_centre": "Field Quality Centre",
+    "Uptime solutions": "Uptime solutions",
     "defense_sourcing": "Defense Sourcing"
 }
 
 MAIN_LAND_DEPARTMENTS = {
-    "chassis_shop": "28.6160,77.2110",
-    "gearbox_6s": "28.6161,77.2111",
-    "gearbox_9s": "28.6162,77.2112",
-    "gear_machining": "28.6163,77.2113",
-    "admin_finance": "28.6164,77.2114",
-    "canteen_main": "28.6165,77.2115",
-    "store": "28.6166,77.2116",
-    "vts_shop": "28.6167,77.2117"
+    "chassis_shop": "13.209549919810451, 80.31742205591088",
+    "gearbox_6s": "13.209837363670559, 80.31813483425225",
+    "gearbox_9s": "13.209837363670559, 80.31813483425225",
+    "heat treatment": "13.207957473496801, 80.31784613241723",
+    "admin_finance": "13.209693574424433, 80.3166161104447",
+    "canteen_main": "13.209821525072439, 80.31702112397613",
+    "shop_2_Office": "13.208204685252353, 80.31658514318255",
+    "vts_shop": "13.208029794646409, 80.31705504743034"
 }
 
 MAIN_LAND_DISPLAY = {
     "chassis_shop": "Chassis Shop",
     "gearbox_6s": "Gearbox Assembly 6S",
     "gearbox_9s": "Gearbox Assembly 9S",
-    "gear_machining": "Gear Machining",
+    "heat treatment": "Heat treatment",
     "admin_finance": "Admin Office - Finance",
     "canteen_main": "Canteen",
-    "store": "Store",
+    "shop_2_Office": "Shop 2 Office",
     "vts_shop": "VTS Shop"
 }
 
@@ -234,6 +234,7 @@ def generate_home_qr():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
 
 
 

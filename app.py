@@ -224,7 +224,8 @@ def generate_qr(dept):
 # ✅ QR code for landing page
 @app.route('/generate_home_qr')
 def generate_home_qr():
-    home_url = url_for('landing_page', _external=True)
+    # Replace this with your deployed public URL
+    home_url = "https://dept-locator.onrender.com/"
     img = qrcode.make(home_url)
     buffer = BytesIO()
     img.save(buffer, format="PNG")
@@ -234,6 +235,7 @@ def generate_home_qr():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
 
 
 

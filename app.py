@@ -6,6 +6,8 @@ from io import BytesIO
 import os
 
 app = Flask(__name__)
+app.config['SERVER_NAME'] = "chirayu-navigation.onrender.com"
+app.config['PREFERRED_URL_SCHEME'] = 'https'
 SECRET_KEY = "your-very-secret-key"
 serializer = URLSafeTimedSerializer(SECRET_KEY)
 
@@ -43,24 +45,24 @@ EAST_LAND_DISPLAY = {
 }
 
 MAIN_LAND_DEPARTMENTS = {
-    "chassis_shop": "28.6160,77.2110",
-    "gearbox_6s": "28.6161,77.2111",
-    "gearbox_9s": "28.6162,77.2112",
-    "gear_machining": "28.6163,77.2113",
-    "admin_finance": "28.6164,77.2114",
-    "canteen_main": "28.6165,77.2115",
-    "store": "28.6166,77.2116",
-    "vts_shop": "28.6167,77.2117"
+    "chassis_shop": "13.209549919810451, 80.31742205591088",
+    "gearbox_6s": "13.209837363670559, 80.31813483425225",
+    "gearbox_9s": "13.209837363670559, 80.31813483425225",
+    "heat treatment": "13.207957473496801, 80.31784613241723",
+    "admin_finance": "13.209693574424433, 80.3166161104447",
+    "canteen_main": "13.209821525072439, 80.31702112397613",
+    "shop_2_Office": "13.208204685252353, 80.31658514318255",
+    "vts_shop": "13.208029794646409, 80.31705504743034"
 }
 
 MAIN_LAND_DISPLAY = {
     "chassis_shop": "Chassis Shop",
     "gearbox_6s": "Gearbox Assembly 6S",
     "gearbox_9s": "Gearbox Assembly 9S",
-    "gear_machining": "Gear Machining",
+    "heat treatment": "Heat treatment",
     "admin_finance": "Admin Office - Finance",
     "canteen_main": "Canteen",
-    "store": "Store",
+    "shop_2_Office": "Shop 2 Office",
     "vts_shop": "VTS Shop"
 }
 
@@ -234,6 +236,5 @@ def generate_home_qr():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
-
 
 

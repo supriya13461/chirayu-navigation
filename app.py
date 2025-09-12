@@ -45,14 +45,14 @@ EAST_LAND_DISPLAY = {
 }
 
 MAIN_LAND_DEPARTMENTS = {
-    "chassis_shop": "13.209549919810451, 80.31742205591088",
-    "gearbox_6s": "13.209837363670559, 80.31813483425225",
-    "gearbox_9s": "13.209837363670559, 80.31813483425225",
-    "heat treatment": "13.207957473496801, 80.31784613241723",
-    "admin_finance": "13.209693574424433, 80.3166161104447",
-    "canteen_main": "13.209821525072439, 80.31702112397613",
-    "shop_2_Office": "13.208204685252353, 80.31658514318255",
-    "vts_shop": "13.208029794646409, 80.31705504743034"
+    "chassis_shop": "13.209549919810451,80.31742205591088",
+    "gearbox_6s": "13.209837363670559,80.31813483425225",
+    "gearbox_9s": "13.209837363670559,80.31813483425225",
+    "heat treatment": "13.207957473496801,80.31784613241723",
+    "admin_finance": "13.209693574424433,80.3166161104447",
+    "canteen_main": "13.209821525072439,80.31702112397613",
+    "shop_2_Office": "13.208204685252353,80.31658514318255",
+    "vts_shop": "13.208029794646409,80.31705504743034"
 }
 
 MAIN_LAND_DISPLAY = {
@@ -131,11 +131,13 @@ def landing_page():
     '''
     return html
 
+
 @app.route('/open_app/<dept>')
 def open_app(dept):
     token = request.args.get('token')
     if not token:
         return "<h2>Invalid or missing token.</h2>", 403
+
     try:
         data = serializer.loads(token, max_age=1800)
         if data["dept"] != dept:
@@ -152,63 +154,54 @@ def open_app(dept):
     lat, lon = dept_coords.split(',')
     encoded_name = quote(dept_name)
 
-    mappls_url = f"https://mappls.com/navigation?places={lat},{lon},{encoded_name}&isNav=true&mode=driving"
-    ios_app_url = f"mappls://navigation?places={lat},{lon},{encoded_name}&isNav=false"
+    mappls_url = f"mappls://navigation?places={lat},{lon},{encoded_name}&isNav=false"
+
+    fallback_url_android = PLAY_STORE_URL
+    fallback_url_ios = IOS_APPSTORE_URL
 
     return f'''
-    <!DOCTYPE html><html><head><title>Launching App</title>
+    <!DOCTYPE html><html><head><title>Open Mappls App</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {{ font-family: Arial, sans-serif; text-align: center; padding-top: 80px; background: #f0f4fa; }}
-        h2 {{ color: #003366; }}
-        #timer {{ font-weight: bold; color: #c00; }}
-        .btn {{ display: inline-block; margin: 10px; padding: 10px 20px; font-size: 1rem; background-color: #0074D9; color: #fff; border: none; border-radius: 5px; cursor: pointer; }}
-        .btn:hover {{ background-color: #005fa3; }}
-    </style>
     <script>
-        let countdown = 5;
-        let fallbackUrl = "";
-
-        function isIOS() {{ return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; }}
-        function isAndroid() {{ return /android/i.test(navigator.userAgent); }}
+        function isIOS() {{
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }}
+        function isAndroid() {{
+            return /android/i.test(navigator.userAgent);
+        }}
 
         function openApp() {{
-            if (isAndroid()) {{ window.location = "{mappls_url}"; fallbackUrl = "{PLAY_STORE_URL}"; }}
-            else if (isIOS()) {{ window.location = "{ios_app_url}"; fallbackUrl = "{IOS_APPSTORE_URL}"; }}
-            else {{
-                document.getElementById('msg').innerHTML = "Please use your mobile device to open the app.";
-                document.getElementById('open-btn').disabled = true;
-            }}
-            startCountdown();
+            var appLink = "{mappls_url}";
+            var fallback = isAndroid() ? "{fallback_url_android}" : "{fallback_url_ios}";
+            var now = new Date().getTime();
+            document.location = appLink;
+
+            setTimeout(function () {{
+                var elapsed = new Date().getTime() - now;
+                if (elapsed < 3000 + 100) {{
+                    window.location = fallback;
+                }}
+            }}, 3000);
         }}
 
-        function openWeb() {{ window.location = "{mappls_url}"; }}
-
-        function startCountdown() {{
-            let timer = setInterval(function () {{
-                if (countdown > 0) {{ document.getElementById('timer').innerText = countdown; countdown--; }}
-                else {{ clearInterval(timer); window.location = fallbackUrl; }}
-            }}, 1000);
-        }}
-
-        window.onload = function() {{
-            document.getElementById('open-btn').addEventListener('click', openApp);
-            document.getElementById('web-btn').addEventListener('click', openWeb);
-        }}
-    </script></head><body>
-        <h2>Would you like to open the Mappls app?</h2>
-        <p>You will be redirected in <span id="timer">5</span> seconds if the app isn't detected.</p>
-        <button class="btn" id="open-btn">Open in App</button>
-        <button class="btn" id="web-btn">Cancel &amp; View in Browser</button>
-        <p id="msg" style="margin-top: 20px;"></p>
+        window.onload = openApp;
+    </script>
+    </head>
+    <body>
+        <p style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
+            Redirecting to Mappls App...<br><br>
+            <a href="{fallback_url_android}" style="font-size: 1.2rem;">Click here if not redirected automatically</a>
+        </p>
     </body></html>
     '''
+
 
 @app.route('/generate_qr/<dept>')
 def generate_qr(dept):
     token = request.args.get('token')
     if not token:
         abort(403, "Missing token")
+
     try:
         data = serializer.loads(token, max_age=1800)
         if data["dept"] != dept:
@@ -223,6 +216,7 @@ def generate_qr(dept):
     buffer.seek(0)
     return send_file(buffer, mimetype="image/png")
 
+
 @app.route('/generate_home_qr')
 def generate_home_qr():
     home_url = url_for('landing_page', _external=True)
@@ -231,6 +225,7 @@ def generate_home_qr():
     img.save(buffer, format="PNG")
     buffer.seek(0)
     return send_file(buffer, mimetype="image/png")
+
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

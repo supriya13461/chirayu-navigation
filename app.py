@@ -155,8 +155,35 @@ def open_app(dept):
 
     mappls_url = f"mappls://navigation?places={lat},{lon},{encoded_name}&isNav=true"
 
-    # Redirect directly to the Mappls app deep link
-    return redirect(mappls_url)
+    return f'''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Launching Mappls</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script>
+            function openApp() {{
+                var isAndroid = /android/i.test(navigator.userAgent);
+                var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+                var appLink = "{mappls_url}";
+                var fallbackLink = isAndroid ? "{PLAY_STORE_URL}" : "{IOS_APPSTORE_URL}";
+
+                window.location = appLink;
+
+                setTimeout(function() {{
+                    window.location = fallbackLink;
+                }}, 2000);
+            }}
+
+            window.onload = openApp;
+        </script>
+    </head>
+    <body>
+        <p style="text-align:center; margin-top: 50px;">Attempting to open the Mappls app... If not installed, you'll be redirected to the store.</p>
+    </body>
+    </html>
+    '''
 
 @app.route('/generate_qr/<dept>')
 def generate_qr(dept):

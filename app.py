@@ -13,11 +13,11 @@ serializer = URLSafeTimedSerializer(SECRET_KEY)
 
 ANDROID_PACKAGE = "com.mmi.maps"
 PLAY_STORE_URL = f"https://play.google.com/store/apps/details?id={ANDROID_PACKAGE}&hl=en_IN"
-IOS_APPSTORE_URL = "https://apps.apple.com/app/id1234567890"
+IOS_APPSTORE_URL = "https://apps.apple.com/in/app/mappls-mapmyindia/id723492531"
 
 # Department coordinates and names
 EAST_LAND_DEPARTMENTS = {
-    "project_planning": "13.205836410733362,80.32088331876697",
+    "project_planning": "13.2057989,80.3209443",
     "shop_vii": "13.2062904,80.3207080",
     "shop_vi": "13.2099126,80.3209142",
     "shop_v": "13.2086706,80.3205279",
@@ -136,7 +136,6 @@ def open_app(dept):
     token = request.args.get('token')
     if not token:
         return "<h2>Invalid or missing token.</h2>", 403
-
     try:
         data = serializer.loads(token, max_age=1800)
         if data["dept"] != dept:
@@ -153,36 +152,56 @@ def open_app(dept):
     lat, lon = dept_coords.split(',')
     encoded_name = quote(dept_name)
 
-    mappls_url = f"mappls://navigation?places={lat},{lon},{encoded_name}&isNav=true"
+    mappls_url = f"https://mappls.com/navigation?places={lat},{lon},{encoded_name}&isNav=true&mode=driving"
+    ios_app_url = f"mappls://navigation?places={lat},{lon},{encoded_name}&isNav=false"
 
     return f'''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Launching Mappls</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script>
-            function openApp() {{
-                var isAndroid = /android/i.test(navigator.userAgent);
-                var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    <!DOCTYPE html><html><head><title>Launching App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {{ font-family: Arial, sans-serif; text-align: center; padding-top: 80px; background: #f0f4fa; }}
+        h2 {{ color: #003366; }}
+        #timer {{ font-weight: bold; color: #c00; }}
+        .btn {{ display: inline-block; margin: 10px; padding: 10px 20px; font-size: 1rem; background-color: #0074D9; color: #fff; border: none; border-radius: 5px; cursor: pointer; }}
+        .btn:hover {{ background-color: #005fa3; }}
+    </style>
+    <script>
+        let countdown = 5;
+        let fallbackUrl = "";
 
-                var appLink = "{mappls_url}";
-                var fallbackLink = isAndroid ? "{PLAY_STORE_URL}" : "{IOS_APPSTORE_URL}";
+        function isIOS() {{ return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; }}
+        function isAndroid() {{ return /android/i.test(navigator.userAgent); }}
 
-                window.location = appLink;
-
-                setTimeout(function() {{
-                    window.location = fallbackLink;
-                }}, 2000);
+        function openApp() {{
+            if (isAndroid()) {{ window.location = "{mappls_url}"; fallbackUrl = "{PLAY_STORE_URL}"; }}
+            else if (isIOS()) {{ window.location = "{ios_app_url}"; fallbackUrl = "{IOS_APPSTORE_URL}"; }}
+            else {{
+                document.getElementById('msg').innerHTML = "Please use your mobile device to open the app.";
+                document.getElementById('open-btn').disabled = true;
             }}
+            startCountdown();
+        }}
 
-            window.onload = openApp;
-        </script>
-    </head>
-    <body>
-        <p style="text-align:center; margin-top: 50px;">Attempting to open the Mappls app... If not installed, you'll be redirected to the store.</p>
-    </body>
-    </html>
+        function openWeb() {{ window.location = "{mappls_url}"; }}
+
+        function startCountdown() {{
+            let timer = setInterval(function () {{
+                if (countdown > 0) {{ document.getElementById('timer').innerText = countdown; countdown--; }}
+                else {{ clearInterval(timer); window.location = fallbackUrl; }}
+            }}, 1000);
+        }}
+
+        window.onload = function() {{
+            document.getElementById('open-btn').addEventListener('click', openApp);
+            document.getElementById('web-btn').addEventListener('click', openWeb);
+        }}
+    </script></head><body>
+        <h2>Would you like to open the Mappls app?</h2>
+        <p>You will be redirected in <span id="timer">5</span> seconds if the app isn't detected.</p>
+        <button class="btn" id="open-btn">Open in App</button>
+        <button class="btn" id="web-btn">Cancel &amp; View in Browser</button>
+        <p id="msg" style="margin-top: 20px;"></p>
+    </body></html>
     '''
 
 @app.route('/generate_qr/<dept>')

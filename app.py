@@ -31,8 +31,8 @@ EAST_LAND_DEPARTMENTS = {
     "hrd_centre": "13.2068653,80.3192841",
     "canteen": "13.2066567,80.3192250",
     "central_quality_office": "13.2064706,80.3196311",
-    "field_quality_centre": "28.6149,77.2100",
-    "defense_sourcing": "28.6150,77.2101",
+    "field_quality_centre": "13.206572069601032, 80.31957997029414",
+    "defense_sourcing": "13.2057989,80.3209443",
 }
 
 EAST_LAND_DISPLAY = {

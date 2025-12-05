@@ -78,80 +78,401 @@ TOKEN_MAX_AGE = 1800  # 30 minutes in seconds
 # ---------------------------
 @app.route('/')
 def landing_page():
+    # home_qr_url is no longer used in UI, but backend /generate_home_qr still exists
     html = '''
     <!DOCTYPE html>
     <html lang="en">
     <head>
-        <title>Department Locator</title>
+        <title>Ashok Leyland - Department Locator</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+
         <style>
-            body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(to right, #f0f4fa, #e6f0fc); margin: 0; padding: 0; }
-            .header { display: flex; justify-content: space-between; align-items: center; background: #003366; color: #fff; padding: 1rem 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-            .header-title { font-size: 2rem; font-weight: bold; letter-spacing: 2px; }
-            .logo { height: 70px; width: auto; background: #fff; border-radius: 8px; padding: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-            .container { max-width: 800px; margin: 2.5rem auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 2.5rem 3rem; }
-            .tag-label { display: inline-block; font-size: 1.2rem; background: #d9ecff; color: #003366; padding: 0.5rem 1.5rem; border-radius: 30px; margin-bottom: 1.5rem; font-weight: bold; letter-spacing: 1px; box-shadow: inset 0 -1px 3px rgba(0,0,0,0.05); }
-            ul { list-style-type: none; padding: 0; }
-            li { margin-bottom: 1rem; }
-            a.dept-link { display: inline-block; padding: 0.8rem 2rem; background: #0074D9; color: #fff; border-radius: 6px; text-decoration: none; font-size: 1.1rem; font-weight: 500; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: all 0.3s ease; }
-            a.dept-link:hover { background: #005fa3; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-            .qr-link { margin-left:10px; font-size:0.9rem; }
-            input[type="text"] { width: 100%; padding: 10px; margin: 20px 0; font-size: 1rem; border-radius: 6px; border: 1px solid #ccc; }
-            footer { text-align: center; padding: 1rem; font-size: 0.9rem; color: #666; background: #f0f4fa; margin-top: 3rem; }
-            @media (max-width: 600px) { .container { padding: 1.5rem; } .header-title { font-size: 1.5rem; } .logo { height: 50px; } }
+            * { box-sizing: border-box; }
+            body {
+                margin: 0;
+                font-family: "Segoe UI", Arial, sans-serif;
+                background: #f4f7fb;
+                color: #111827;
+            }
+
+            /* Top header with centered big logo */
+            .app-header {
+                background: #003366;
+                color: #ffffff;
+                padding: 22px 16px 18px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            }
+            .header-center {
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+            .logo-circle {
+                width: 120px;
+                height: 120px;
+                border-radius: 999px;
+                background: #ffffff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+                overflow: hidden;
+            }
+            .logo-circle img {
+                width: 100px;
+                height: auto;
+            }
+            .header-title-main {
+                font-size: 1.6rem;
+                font-weight: 700;
+                letter-spacing: 2px;
+            }
+            .header-title-sub {
+                font-size: 0.9rem;
+                opacity: 0.9;
+            }
+
+            .page-wrapper {
+                max-width: 1200px;
+                margin: 22px auto 32px;
+                padding: 0 16px;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+                font-weight: 600;
+                margin-bottom: 6px;
+                color: #111827;
+                text-align: center;
+            }
+            .page-subtitle {
+                font-size: 0.95rem;
+                color: #4b5563;
+                margin-bottom: 18px;
+                text-align: center;
+            }
+
+            /* Zone selector view */
+            #zone-selector {
+                text-align: center;
+            }
+            .zone-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 16px;
+                margin-top: 18px;
+            }
+            .zone-btn {
+                min-width: 220px;
+                padding: 12px 18px;
+                border-radius: 999px;
+                border: none;
+                background: #0074D9;
+                color: #ffffff;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                box-shadow: 0 6px 16px rgba(0,116,217,0.4);
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+            }
+            .zone-btn:hover {
+                background: #005fa3;
+                transform: translateY(-1px);
+            }
+
+            /* Zone view (after clicking East/Main) */
+            #zone-view {
+                display: none;
+            }
+            .zone-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 14px;
+            }
+            .back-btn {
+                border: none;
+                background: transparent;
+                font-size: 1.4rem;
+                cursor: pointer;
+                color: #003366;
+                padding: 4px 8px 4px 0;
+            }
+            .zone-title-block {
+                display: flex;
+                flex-direction: column;
+            }
+            .zone-title {
+                font-size: 1.3rem;
+                font-weight: 600;
+                color: #111827;
+            }
+            .zone-subtitle {
+                font-size: 0.9rem;
+                color: #4b5563;
+            }
+
+            .search-box {
+                position: relative;
+                margin-bottom: 18px;
+            }
+            .search-input {
+                width: 100%;
+                padding: 11px 40px 11px 14px;
+                border-radius: 999px;
+                border: 1px solid #d1d5db;
+                font-size: 0.98rem;
+                outline: none;
+                box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+                background: #ffffff;
+            }
+            .search-input:focus {
+                border-color: #0074D9;
+                box-shadow: 0 0 0 1px rgba(0,116,217,0.3);
+            }
+            .search-icon {
+                position: absolute;
+                right: 14px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 1.1rem;
+                color: #9ca3af;
+            }
+
+            .layout-grid {
+                display: block; /* single column now */
+            }
+
+            .card {
+                background: rgba(255,255,255,0.95);
+                border-radius: 16px;
+                padding: 16px 16px 18px;
+                box-shadow: 0 10px 25px rgba(15,23,42,0.12);
+                border: 1px solid rgba(148,163,184,0.25);
+                margin-bottom: 16px;
+            }
+
+            .dept-list {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .dept-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 6px;
+            }
+
+            /* Department button (keep same blue as original) */
+            .dept-link {
+                flex: 1;
+                display: inline-block;
+                padding: 9px 11px;
+                background: #0074D9;
+                border-radius: 999px;
+                text-decoration: none;
+                color: #ffffff;
+                font-size: 0.95rem;
+                font-weight: 500;
+                border: 1px solid transparent;
+                transition: all 0.18s ease;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .dept-link:hover {
+                background: #005fa3;
+                border-color: #003366;
+                transform: translateY(-1px);
+                box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+            }
+
+            .footer-actions {
+                margin-top: 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .note-text {
+                font-size: 0.8rem;
+                color: #003366;
+                margin-top: 4px;
+            }
+
+            footer {
+                text-align: center;
+                font-size: 0.8rem;
+                color: #6b7280;
+                padding: 12px 0 20px;
+            }
+
+            @media (max-width: 640px) {
+                .app-header {
+                    padding: 18px 10px;
+                }
+                .logo-circle {
+                    width: 100px;
+                    height: 100px;
+                }
+                .logo-circle img {
+                    width: 80px;
+                }
+                .page-wrapper {
+                    margin-top: 18px;
+                }
+                .card {
+                    padding: 14px 12px 16px;
+                }
+            }
         </style>
+
         <script>
-        function filterDepts() {
-            let input = document.getElementById('search').value.toLowerCase();
-            document.querySelectorAll('.dept-link').forEach(link => {
-                link.parentElement.style.display = link.textContent.toLowerCase().includes(input) ? '' : 'none';
-            });
-        }
+            function openZone(zone) {
+                document.getElementById('zone-selector').style.display = 'none';
+                document.getElementById('zone-view').style.display = 'block';
+
+                const eastZone = document.getElementById('east-zone');
+                const mainZone = document.getElementById('main-zone');
+                const title = document.getElementById('zone-title');
+                const subtitle = document.getElementById('zone-subtitle');
+
+                if (zone === 'east') {
+                    eastZone.style.display = 'block';
+                    mainZone.style.display = 'none';
+                    title.textContent = 'East Land Departments';
+                    subtitle.textContent = 'Select a department in East Land to start navigation.';
+                } else {
+                    eastZone.style.display = 'none';
+                    mainZone.style.display = 'block';
+                    title.textContent = 'Main Land Departments';
+                    subtitle.textContent = 'Select a department in Main Land to start navigation.';
+                }
+
+                const search = document.getElementById('search');
+                if (search) {
+                    search.value = '';
+                    filterDepts();
+                }
+            }
+
+            function goBack() {
+                document.getElementById('zone-view').style.display = 'none';
+                document.getElementById('zone-selector').style.display = 'block';
+            }
+
+            function filterDepts() {
+                const input = document.getElementById('search');
+                if (!input) return;
+                const term = input.value.toLowerCase();
+                document.querySelectorAll('.dept-link').forEach(link => {
+                    const row = link.parentElement;
+                    const match = link.textContent.toLowerCase().includes(term);
+                    row.style.display = match ? '' : 'none';
+                });
+            }
         </script>
     </head>
     <body>
-        <div class="header">
-            <div class="header-title">Department Locator</div>
-            <img src="/static/Ashok-Leyland-Logo.png" alt="Ashok Leyland Logo" class="logo">
-        </div>
-        <div class="container">
-            <input type="text" id="search" placeholder="Search Department..." onkeyup="filterDepts()">
-            <div class="tag-label">EAST LAND</div>
-            <ul>
+        <header class="app-header">
+            <div class="header-center">
+                <div class="logo-circle">
+                    <img src="/static/Ashok-Leyland-Logo.png" alt="Ashok Leyland Logo">
+                </div>
+                <div class="header-title-main">ASHOK LEYLAND</div>
+                <div class="header-title-sub">Department Locator</div>
+            </div>
+        </header>
+
+        <main class="page-wrapper">
+            <!-- First view: Logo + two options -->
+            <section id="zone-selector">
+                <div class="page-title">Department Locator</div>
+                <div class="page-subtitle">
+                    Choose your zone inside the plant to view departments and open navigation.
+                </div>
+                <div class="zone-buttons">
+                    <button class="zone-btn" onclick="openZone('east')">East Land Departments</button>
+                    <button class="zone-btn" onclick="openZone('main')">Main Land Departments</button>
+                </div>
+            </section>
+
+            <!-- Second view: zone-specific list with back arrow -->
+            <section id="zone-view">
+                <div class="zone-header">
+                    <button class="back-btn" onclick="goBack()">&#8592;</button>
+                    <div class="zone-title-block">
+                        <div class="zone-title" id="zone-title">East Land Departments</div>
+                        <div class="zone-subtitle" id="zone-subtitle">
+                            Select a department in East Land to start navigation.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <input id="search" class="search-input" type="text"
+                           placeholder="Search department in this zone…"
+                           onkeyup="filterDepts()">
+                    <span class="search-icon">&#128269;</span>
+                </div>
+
+                <div class="layout-grid">
+                    <section class="card" id="east-zone">
+                        <div class="dept-list">
     '''
     # EAST LAND list – tokens generated per page load
     for code, name in EAST_LAND_DISPLAY.items():
         token = serializer.dumps({"dept": code})
         dept_url = url_for('open_app', dept=code, token=token)
-        qr_url = url_for('generate_qr_for_session', dept=code, token=token)
         html += (
-            f'<li><a class="dept-link" href="{dept_url}">{name}</a>'
-            f'<a class="qr-link" href="{qr_url}">[QR]</a></li>'
-        )
-
-    # MAIN LAND list – tokens generated per page load
-    html += '''</ul><div class="tag-label">MAIN LAND</div><ul>'''
-    for code, name in MAIN_LAND_DISPLAY.items():
-        token = serializer.dumps({"dept": code})
-        dept_url = url_for('open_app', dept=code, token=token)
-        qr_url = url_for('generate_qr_for_session', dept=code, token=token)
-        html += (
-            f'<li><a class="dept-link" href="{dept_url}">{name}</a>'
-            f'<a class="qr-link" href="{qr_url}">[QR]</a></li>'
+            f'<div class="dept-row">'
+            f'<a class="dept-link" href="{dept_url}">{name}</a>'
+            f'</div>'
         )
 
     html += '''
-            </ul>
-            <p style="margin-top: 2rem;">
-                <a href="/generate_home_qr" class="dept-link" style="background:#28a745;">
-                    📍 QR for Landing Page
-                </a>
-            </p>
-            <p style="margin-top: 1rem; font-size: 0.85rem; color:#555;">
-                Note: Navigation links and QR codes are valid for 30 minutes from creation for security.
-            </p>
-        </div>
-        <footer>&copy; 2025 Ashok Leyland. All rights reserved.</footer>
+                        </div>
+                    </section>
+
+                    <section class="card" id="main-zone" style="display:none;">
+                        <div class="dept-list">
+    '''
+
+    # MAIN LAND list – tokens generated per page load
+    for code, name in MAIN_LAND_DISPLAY.items():
+        token = serializer.dumps({"dept": code})
+        dept_url = url_for('open_app', dept=code, token=token)
+        html += (
+            f'<div class="dept-row">'
+            f'<a class="dept-link" href="{dept_url}">{name}</a>'
+            f'</div>'
+        )
+
+    html += '''
+                        </div>
+                    </section>
+                </div>
+
+                <div class="footer-actions">
+                    <p class="note-text">
+                        Note: Navigation links and QR codes are valid for 30 minutes from creation for security.
+                    </p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            &copy; 2025 Ashok Leyland. All rights reserved.
+        </footer>
     </body>
     </html>
     '''

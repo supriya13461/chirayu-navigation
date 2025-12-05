@@ -314,7 +314,9 @@ def landing_page():
                 font-size: 0.8rem;
                 color: #6b7280;
                 padding: 12px 0 20px;
+                
             }
+       
 
             @media (max-width: 640px) {
                 .app-header {
@@ -464,13 +466,16 @@ def landing_page():
 
                 <div class="footer-actions">
                     <p class="note-text">
-                        Note: Navigation links and QR codes are valid for 30 minutes from creation for security.
+                        Note: Navigation links and QR codes are valid for 30 minutes.
                     </p>
                 </div>
             </section>
         </main>
 
         <footer>
+            <p class="note-text">
+                Navigation through Mappls App
+            </p>
             &copy; 2025 Ashok Leyland. All rights reserved.
         </footer>
     </body>
